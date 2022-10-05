@@ -29,8 +29,8 @@
 }
 
 .Close {
-    /* Take it away from tthe screen */
-    transform: translateX(-100);
+    /* Take it away from the screen */
+    transform: translateX(-100%);
 }
 
 .Logo {
