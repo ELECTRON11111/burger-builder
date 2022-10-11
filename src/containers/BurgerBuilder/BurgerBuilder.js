@@ -6,6 +6,7 @@ import BuildControls from "../../components/Burger/BuildControls/BuildControls";
 import Modal from "../../components/Modal/Modal";
 import OrderSummary from "../../components/Burger/OrderSummary/OrderSummary";
 import axios from "../../axios-orders";
+import Spinner from "../../components/UI/Spinner/Spinner";
 
 const INGREDIENT_PRICES = {
     salad: 0.5,
@@ -23,7 +24,8 @@ class BurgerBuilder extends Component{
         },
         totalPrice: 4,
         purchasable: false,
-        purchasing: false
+        purchasing: false,
+        loading: false
     }
 
     updatePurchaseState = (updatedIngredients) => {
@@ -91,6 +93,7 @@ class BurgerBuilder extends Component{
 
     purchaseContinueHandler = () => {
         // alert("You Continued!");
+        this.setState({loading: true});
         const order = {
             ingredients: this.state.ingredients,
             customer: {
@@ -108,12 +111,16 @@ class BurgerBuilder extends Component{
         // send the order data to the backend
         // if we add "/orders.json" to the backend, what firebase does is that it creates a node for those and stores each child element under it.
         // So for any endpoint name of your choice with firebase, you add .json
+        // console.log("got here");
         axios.post("/orders.json", order)
             .then(res => {
                 console.log(res);
+                // stop spinner and close modal
+                this.setState({loading: false, purchasing: false});
             })
             .catch(err => {
                 console.log(err);
+                this.setState({loading: false, purchasing: false});
             });
     }
 
@@ -124,17 +131,25 @@ class BurgerBuilder extends Component{
         
         for (let key in disabledInfo) {
             disabledInfo[key] = disabledInfo[key] <= 0;
+            // {salad: true, cheese: false, ...}
         }
-        // {salad: true, cheese: false, ...}
+        
+        let content;
+        if(this.state.loading) {
+            content = <Spinner />
+        }
+        if (!this.state.loading) {
+            content = <OrderSummary 
+                price = {this.state.totalPrice}
+                ingredients = {this.state.ingredients}
+                cancelled = {this.purchaseCancelHandler}
+                continued = {this.purchaseContinueHandler}    
+            />
+        }
         return (
             <Auxiliary>
                 <Modal show={this.state.purchasing} modalClosed= {this.purchaseCancelHandler}>
-                    <OrderSummary 
-                        price = {this.state.totalPrice}
-                        ingredients = {this.state.ingredients}
-                        cancelled = {this.purchaseCancelHandler}
-                        continued = {this.purchaseContinueHandler}    
-                    />
+                    {content}
                 </Modal>
                 <Burger ingredients = {this.state.ingredients}/>
                 <BuildControls
