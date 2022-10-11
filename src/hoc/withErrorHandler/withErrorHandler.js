@@ -8,19 +8,28 @@ const withErrorHandler = (WrappedComponent, axios) => {
     return class extends Component{
         componentDidMount() {
             // Here we set up our global interceptors
-            axios.interceptors.request.use(req => {
+            this.reqInterceptor = axios.interceptors.request.use(req => {
                 // clear any existing errors in the state
                 this.setState({error: null});
                 // Remember when we use interceptors, we must always return the request/response
                 return req;
             });
             
-            axios.interceptors.response.use(res => res, error => {
+            this.resInterceptor = axios.interceptors.response.use(res => res, error => {
                 console.log(error);
                 this.setState({error: error});
                 // Remember when we use interceptors, we must always return the Promise.reject(error) to handle the error
                 return Promise.reject(error);
             });   
+        }
+
+        // When this component is no longer in use, we have to remove the interceptors
+        componentWillUnmount() {
+            // This lifecycle hook is executed at the point in time where a component isn't required.
+            // we do this by passing a reference to the interceptor into the axios eject() method
+            console.log("component Unmount", this.reqInterceptor, this.resInterceptor);
+            axios.interceptors.request.eject(this.reqInterceptor);
+            axios.interceptors.response.eject(this.resInterceptor);
         }
         
         state = {
