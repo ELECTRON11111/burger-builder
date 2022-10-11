@@ -5,6 +5,7 @@ import Burger from "../../components/Burger/Burger";
 import BuildControls from "../../components/Burger/BuildControls/BuildControls";
 import Modal from "../../components/Modal/Modal";
 import OrderSummary from "../../components/Burger/OrderSummary/OrderSummary";
+import axios from "../../axios-orders";
 
 const INGREDIENT_PRICES = {
     salad: 0.5,
@@ -89,7 +90,31 @@ class BurgerBuilder extends Component{
     }
 
     purchaseContinueHandler = () => {
-        alert("You Continued!");
+        // alert("You Continued!");
+        const order = {
+            ingredients: this.state.ingredients,
+            customer: {
+                name: "Omoniyi Daniel",
+                address: {
+                    street: "TestStreet 1",
+                    zipCode: "3442943",
+                    country: "Nigeria"
+                },
+                deliveryMethod: "fastest"
+            }, 
+            price: this.state.totalPrice.toFixed(2) // in a real app, this shouldn't be done here, should be recalculated on the server.
+        }
+
+        // send the order data to the backend
+        // if we add "/orders.json" to the backend, what firebase does is that it creates a node for those and stores each child element under it.
+        // So for any endpoint name of your choice with firebase, you add .json
+        axios.post("/orders.json", order)
+            .then(res => {
+                console.log(res);
+            })
+            .catch(err => {
+                console.log(err);
+            });
     }
 
     render() {
